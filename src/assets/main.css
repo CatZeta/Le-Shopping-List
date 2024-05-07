@@ -1,0 +1,74 @@
+/* Custom font */
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;1,400;1,500;1,700&display=swap');
+
+/* variables */
+:root {
+    --main-color: #d1aeff;
+    --secondary-color: #36a357;
+    --warning-color: #c90202;
+    --font-color: #252525;        
+}
+
+* {
+    font-family: 'Ubuntu', sans-serif;
+    color: var(--font-color);
+    margin: 0;
+    padding: 0;
+}
+
+body {
+background: #fafafa;
+}
+
+/*Remove underline*/
+a {
+    text-decoration: none;
+}
+
+button, .btn { 
+    background: var(--secondary-color);
+    border-radius: 8px;
+    border: 0;
+    padding: 8px 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-block;
+  }
+  button:hover, .btn:hover {
+    background: var(--main-color);
+    color: white;
+  }
+  button:disabled {
+    opacity: 0.5;
+    color: var(--main-color);
+    background: var(--secondary-color);
+    cursor: not-allowed;
+  }
+  
+  /* forms */
+  form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 1px 2px 3px rgba(50,50,50,0.05);
+    border: 1px solid  var(--secondary-color);
+    background: white;
+  }
+  input, textarea {
+    border: 0;
+    border-bottom: 1px solid var(--secondary-color);
+    padding: 10px;
+    outline: none;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 20px auto;
+  }
+  
+  /* error text */
+  .error {
+    color: var(--warning-color);
+    font-size: 14px;
+    margin: 16px 0;
+  }
