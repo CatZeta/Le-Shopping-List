@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # le-shoppinglist
 
 ## Project setup
