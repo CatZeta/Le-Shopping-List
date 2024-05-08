@@ -10,6 +10,7 @@ import { projectFirestore } from '@/firebase/config'
 const useCollection = (collection) => {
     // Ref to hold any error that occurs during Firestore operations.
     const error = ref(null)
+    const isPending = ref(false)
 
     /**
      * Adds a document to the specified Firestore collection.
@@ -19,19 +20,25 @@ const useCollection = (collection) => {
     const addDoc = async (doc) => {
         // Reset error before attempting operation.
         error.value = null
+        isPending.value = true
+        
 
         try {  
             // Attempt to add the document to the collection.
-            await projectFirestore.collection(collection).add(doc)
+            const resp = await projectFirestore.collection(collection).add(doc)
+            isPending.value = false
+            return resp
+
         } catch (err) {
             // Log the error and set the error ref.
             console.log(err.message)
             error.value = err.message
+            isPending.value = false
         }
     }
 
     // Return the error ref and the addDoc function.
-    return {error, addDoc}
+    return {error, addDoc, isPending}
 }
 
 export default useCollection
