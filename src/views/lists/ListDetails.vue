@@ -7,24 +7,57 @@
             </div>
             <h2>{{ sl.title }}</h2>
             <p class="username">Created by {{ sl.userName }}</p>
+            <button v-if="ownership" @click="handleDeleteList">Delete</button>
         </div>
         <!--Items list-->
         <div class="item-list">
-           <p class="list" v-for="item in sl.items">{{item}}</p> 
+        <div v-if="!sl.items.length">No Item's yet in this list</div>
+        <div v-for="item in sl.items" :key="item.id" class="single-item">
+        <div class="details">
+         <p>{{ item }}</p>
+        </div>
+        <button v-if="ownership" @click="handleDeleteItem(item.id)">Delete</button>
+        </div>          
+          <AddItem v-if="ownership" :sl="sl" />
         </div>
     </div>
 </template>
 
 <script>
+import AddItem from '@/components/AddItem.vue'
+import { useRouter } from 'vue-router'
+import useStorage from '@/composables/useStorage';
+import useDocument from '@/composables/useDocument';
 import getDocument from '@/composables/getDocument';
+import getUser from '@/composables/getUser';
+import { computed } from 'vue';
 
 export default {
     props: ['id'],
+    components: { AddItem },
     setup (props) {
-        //sl for shopping list
-        const { document: sl, error } = getDocument('shoppingLists', props.id)
+      const router = useRouter()
+      const {deleteImage} = useStorage()
+      const {deleteDoc} = useDocument('shoppingLists', props.id)
+      const { currentUser } = getUser()
+      //sl for shopping list (alias)
+      const { document: sl, error } = getDocument('shoppingLists', props.id)
 
-        return {error, sl}
+      const ownership = computed(() => {
+          return sl.value && currentUser.value && currentUser.value.uid === sl.value.userId
+      })
+
+      const handleDeleteList = async () => {
+        await deleteImage(sl.value.filePath)    
+        await deleteDoc()
+        router.push('/')
+      }
+
+      const handleDeleteItem = async (id) => {
+        await deleteDoc(id)
+      }
+
+      return {error, sl, ownership, handleDeleteList, handleDeleteItem}
     }
 }
 </script>
@@ -65,10 +98,12 @@ export default {
   .username {
     color: #999;
   }
-  .item-list {
-    overflow-y: scroll;
-    text-align: left;
-    max-height: 400px;
- 
+  .single-item {
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed var(--secondary);
+    margin-bottom: 20px;
   }
 </style>
