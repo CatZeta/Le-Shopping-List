@@ -1,4 +1,4 @@
-import { projectAuth } from "@/firebase/config"
+import { projectAuth, projectFirestore } from "@/firebase/config"
 import { ref } from "vue"
 
 //Out of function so it can be used for different stage error's
@@ -21,6 +21,13 @@ const signup = async (email, password, displayName) =>{
         } 
 
         await resp.user.updateProfile({ displayName })
+
+        await projectFirestore.collection('users').doc(resp.user.uid).set({
+            displayName: displayName,
+            email: email,
+            userId: resp.user.uid,
+            createdAt: new Date()
+        })
 
         error.value = null
         isPending.value = false

@@ -2,7 +2,16 @@
     <form>
         <h4>Create Shopping List</h4>
         <input type="text" placeholder="List title" v-model="title" required>
+        <input type="text" placeholder="Enter email to share list" v-model="userEmail">
+        <button @click.prevent="addSharedUser">Add User</button>
         <input type="text" placeholder="Enter to add item" v-model="newItem" @keyup.enter="addItem">
+        <div v-if="selectedUsers">
+            <h4>Selected Users</h4>
+            <ul>
+                <li v-for="userId in selectedUsers" :key="userId">{{ userId }}</li>
+            </ul>
+        </div>
+
         
         <!--TODO: Implemtent library for optical character recognition so the user can uploads their own lists and convert them-->
         <p>upload photos to convert existing lists</p>
@@ -15,7 +24,7 @@
         <h4>{{ title }}</h4>
         <br>
          <ul>
-            <li v-for="item in items" :key="item.id">{{ item }}</li>
+            <li v-for="item in items" :key="item.id">{{ item.item }}</li>
         </ul>
     </div> 
     </form>
@@ -29,13 +38,16 @@ import useStorage  from '@/composables/useStorage.js'
 import useCollection from '@/composables/useCollection'
 import getUser from '@/composables/getUser'
 import { useRouter } from 'vue-router'
-import router from '@/router'
+
+import { projectFirestore } from '@/firebase/config'
+
 
 export default {
     setup () {
         const { url, filePath, uploadImage } = useStorage();
         const { error, addDoc } = useCollection('shoppingLists');
         const {currentUser} = getUser()
+  
         const router = useRouter()
 
         const title = ref('')
@@ -45,6 +57,31 @@ export default {
         const fileError = ref(null)
         const showItems = ref(false)
         const isPending = ref(false)
+        const userEmail = ref('')
+        const sharedWith = ref([])
+        
+        const addSharedUser = async () => {
+            if (!userEmail.value) return;
+
+            try {
+                
+                const userSnapshot = await projectFirestore.collection('users').where('email', '==', userEmail.value).get();
+
+                if (userSnapshot.empty) {
+                    console.log('User not found');
+                    return;
+                }
+
+                const user = userSnapshot.docs[0].data();
+                console.log('user added:', user);
+                sharedWith.value.push({id: user.userId, displayName: user.displayName}); // Adiciona o usuário selecionado
+ 
+                userEmail.value = '';
+
+            } catch (err) {
+                console.error('Error adding user to list:', err.message);
+            }
+        };
 
         const handleSubmit = async () => {
             //Se a ref do file estiver vazia ele não entra no if e o processo não finaliza
@@ -60,7 +97,8 @@ export default {
                     items: items.value,
                     imageURL: url.value,
                     filePath: filePath.value,
-                    createdAt: timestamp()
+                    createdAt: timestamp(),
+                    sharedWith: sharedWith.value
                 });
                 isPending.value = false
 
@@ -94,12 +132,18 @@ export default {
         };
 
         const addItem = () => {
-            if (newItem.value.trim() !== '') {
-                items.value.push(newItem.value);
-                showItems.value = true
-                newItem.value = '';
-            }
-        };
+        if (newItem.value.trim() !== '') {
+            const item = {
+                item: newItem.value,
+                userId: currentUser.value.uid,
+                id: Math.floor(Math.random() * 1000000)
+            };
+            items.value.push(item);
+            showItems.value = true;
+            newItem.value = '';
+    }
+};
+
 
         return { 
             title, 
@@ -110,7 +154,9 @@ export default {
             isPending,
             handleSubmit, 
             addItem, 
-            handleFileUpload
+            handleFileUpload,
+            addSharedUser, 
+            userEmail
              }
     }
 }

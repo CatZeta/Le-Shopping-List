@@ -2,13 +2,12 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /shoppingLists/{docId} {
-      //Allows read and write if theres a valid login
-      allow read, create: if request.auth != null;
-      //Allows to create and update docs only if the user onwes them
-      //Resource represents the resource we are trying to delete/update(the documents)
-      //Data represents the info in the document
-      allow delete, update: if request.auth.uid == resource.data.userId;
+    // Allow read and write access to all documents
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
+
+
+
