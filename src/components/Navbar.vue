@@ -8,6 +8,7 @@
                 <div v-if="currentUser" >
                   <RouterLink  :to="{ name: 'CreateList' }">Create List</RouterLink>
                   <RouterLink  :to="{ name: 'MyLists' }">My List</RouterLink>
+                  <span>Hello, {{ currentUser.displayName }}</span>
                   <button @click="handleLogout">Logout</button>
                 </div>
                 
@@ -76,5 +77,12 @@ export default {
   img {
     border-radius: 50%;
     border: 2px solid rgba(21, 2, 131, 0.411);
+  }
+  span {
+    font-size: 14px;
+    display: inline-block;
+    margin-left: 16px;
+    padding-left: 16px;
+    border-left: 1px solid #eee;
   }
 </style>
