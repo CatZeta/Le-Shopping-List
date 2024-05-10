@@ -7,7 +7,7 @@ import ListDetails from '@/views/lists/ListDetails.vue'
 
 
 //Route guard
-import { projectAuth} from '@/firebase/config'
+import { projectAuth } from '@/firebase/config'
 import MyLists from '@/views/lists/MyLists.vue'
 
 const requireAuth = (to, from, next) => {
