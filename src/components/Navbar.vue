@@ -3,15 +3,19 @@
         <nav>
             <img src="@/assets/uni.png" alt="the round universe">
             <h1><RouterLink :to="{ name: 'Home' }">Le Shopping Master</RouterLink></h1>
+           
             <div class="links">
                 <div v-if="currentUser" >
-                  <RouterLink  :to="{ name: 'CreateList' }">Create New List</RouterLink>
-                    <button @click="handleLogout">Logout</button>
+                  <RouterLink  :to="{ name: 'CreateList' }">Create List</RouterLink>
+                  <RouterLink  :to="{ name: 'MyLists' }">My List</RouterLink>
+                  <button @click="handleLogout">Logout</button>
                 </div>
+                
                 <div v-if="!currentUser" >
                     <RouterLink class="btn" :to="{ name: 'Signup' }">Signup</RouterLink>
                     <RouterLink class="btn" :to="{ name: 'Login' }">Log in</RouterLink>
                 </div>
+               
                 <div v-if="error" class="error">{{ error }}</div>
             </div>
         </nav>

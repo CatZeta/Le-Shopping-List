@@ -24,7 +24,7 @@ export default {
         const handleSubmit = async () => {
             const resp = await login(email.value, password.value)
             if(!error.value) {
-                router.push({ name: 'Home' })
+                router.push({ name: 'MyLists' })
                 console.log('user logged in')
             }
             console.log(resp)

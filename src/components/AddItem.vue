@@ -1,6 +1,6 @@
 <template>
    <div class="add-item">
-    <button v-if="!showForm" @click="showForm = true">Add Items</button>
+    <button v-if="!showForm"  @click="showForm = true">Add Items</button>
     <form v-if="showForm" @submit.prevent="handleSubmit"> 
         <input type="text" placeholder="New item" v-model="item" required>
         <button>Add</button>
@@ -31,6 +31,9 @@ export default {
             }
             await updateDoc({items: [...props.sl.items, newItem]})
             console.log(newItem)
+            
+            item.value = ''
+            
         }
 
         return {item, showForm, handleSubmit}
@@ -40,7 +43,7 @@ export default {
 
 <style scoped>
  .add-item {
-     margin-top: 100%;
+     margin-top: 10%;
      text-align: center;
  }
  form {

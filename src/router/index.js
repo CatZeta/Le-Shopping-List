@@ -8,6 +8,7 @@ import ListDetails from '@/views/lists/ListDetails.vue'
 
 //Route guard
 import { projectAuth} from '@/firebase/config'
+import MyLists from '@/views/lists/MyLists.vue'
 
 const requireAuth = (to, from, next) => {
   let user = projectAuth.currentUser
@@ -45,6 +46,13 @@ const routes = [
     path: '/shoppinglists/:id',
     name: 'ListDetails',
     component: ListDetails,
+    beforeEnter: requireAuth,
+    props: true
+  },
+  {
+    path: '/shoppinglists/user',
+    name: 'MyLists',
+    component: MyLists,
     beforeEnter: requireAuth,
     props: true
   }

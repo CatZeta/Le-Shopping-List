@@ -36,10 +36,11 @@ export default {
     props: ['id'],
     components: { AddItem },
     setup (props) {
+       const { currentUser } = getUser()
       const router = useRouter()
       const {deleteImage} = useStorage()
-      const {deleteDoc} = useDocument('shoppingLists', props.id)
-      const { currentUser } = getUser()
+      const {deleteDoc, updateDoc} = useDocument('shoppingLists', props.id)
+      
       //sl for shopping list (alias)
       const { document: sl, error } = getDocument('shoppingLists', props.id)
 
@@ -54,7 +55,9 @@ export default {
       }
 
       const handleDeleteItem = async (id) => {
-        await deleteDoc(id)
+        const items = sl.value.items.filter(item => item.id !== id) 
+        await updateDoc({items})
+        console.log(id)
       }
 
       return {error, sl, ownership, handleDeleteList, handleDeleteItem}
