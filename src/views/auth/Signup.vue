@@ -1,6 +1,6 @@
 <template>
     <form @submit.prevent="handleSubmit">
-        <h3>Signup</h3>
+        <h3>Signup</h3>layN
         <input type="text" placeholder="Display Name" v-model="displayName">
         <input type="email" placeholder="Email" v-model="email">
         <input type="password" placeholder="Password" v-model="password">
@@ -18,20 +18,22 @@ import { ref } from 'vue'
 
 export default {
     setup () {
-        const router = useRouter()
-        const {error, signup, isPending} = useSignup()
+        
         const displayName = ref('')
         const email = ref('')
         const password = ref('')
+
+        const router = useRouter()
+        const {error, signup, isPending} = useSignup()
 
         const handleSubmit = async () => {
             const resp = await signup(email.value, password.value, displayName.value)
             if(!error.value) {
 
                 router.push({ name: 'Home' })
-                console.log('user signed up')
+
             }
-            console.log(resp)
+            console.log('user signed up', resp)
         }
 
         return {error, displayName, email, password, handleSubmit, isPending}

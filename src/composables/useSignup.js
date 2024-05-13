@@ -22,6 +22,7 @@ const signup = async (email, password, displayName) =>{
 
         await resp.user.updateProfile({ displayName })
 
+        //Sending user data to a user collection, so i can used it for the sharedWith property
         await projectFirestore.collection('users').doc(resp.user.uid).set({
             displayName: displayName,
             email: email,
