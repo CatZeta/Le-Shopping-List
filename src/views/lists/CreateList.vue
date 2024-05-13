@@ -38,7 +38,7 @@ import useStorage  from '@/composables/useStorage.js'
 import useCollection from '@/composables/useCollection'
 import getUser from '@/composables/getUser'
 import { useRouter } from 'vue-router'
-
+import useUsers from '@/composables/useUsers'
 import { projectFirestore } from '@/firebase/config'
 
 
@@ -47,6 +47,7 @@ export default {
         const { url, filePath, uploadImage } = useStorage();
         const { error, addDoc } = useCollection('shoppingLists');
         const {currentUser} = getUser()
+        const { availableUsers, selectedUsers, addSelectedUser } = useUsers()  // Use the useUsers composable
   
         const router = useRouter()
 
@@ -74,6 +75,7 @@ export default {
 
                 const user = userSnapshot.docs[0].data();
                 console.log('user added:', user);
+                addSelectedUser(user.userId, user.displayName)
                 sharedWith.value.push({id: user.userId, displayName: user.displayName}); // Adiciona o usuário selecionado
  
                 userEmail.value = '';
@@ -156,7 +158,10 @@ export default {
             addItem, 
             handleFileUpload,
             addSharedUser, 
-            userEmail
+            userEmail,
+            sharedWith,
+            selectedUsers,
+            availableUsers
              }
     }
 }
