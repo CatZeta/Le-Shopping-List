@@ -3,12 +3,15 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /shoppingLists/{shoppingListId} {
       // Allow create access only if the user is authenticated
-      allow create: if request.auth != null;
+      allow read, create, update: if request.auth != null;
+
+
 
       // Allow read, update, and delete access only for the owner of the shopping list
-      allow read, delete, update: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow  delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
     
+    //So the currentUser can add users to a
     match /users/{userId} {
       allow write, read: if request.auth != null;
     }

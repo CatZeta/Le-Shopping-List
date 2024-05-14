@@ -4,31 +4,37 @@
         <input type="text" placeholder="List title" v-model="title" required>
         <input type="text" placeholder="Enter email to share list" v-model="userEmail">
         <button @click.prevent="addSharedUser">Add User</button>
+
         <input type="text" placeholder="Enter to add item" v-model="newItem" @keyup.enter="addItem">
+
+        <!-- Displays seleted users -->
         <div v-if="selectedUsers">
             <h4>Selected Users</h4>
-            <ul>
-                <li v-for="userId in selectedUsers" :key="userId">{{ userId }}</li>
-            </ul>
+                <p v-for="user in selectedUsers" :key="userId">{{ user }}</p>
         </div>
+        <br>
 
         
         <!--TODO: Implemtent library for optical character recognition so the user can uploads their own lists and convert them-->
-        <p>upload photos to convert existing lists</p>
+        <p>upload a photo</p>
         <input type="file" @change="handleFileUpload">
         <div class="error">{{ fileError }}</div>
-        <!--TODO: create loading indicator-->
+
+
+        <!--loading indicator-->
         <button v-if="!isPending" @click.prevent="handleSubmit">Create</button>
         <button v-else disabled>Saving...</button>
-    <div class="list" v-if="showItems">
+        <br>
+
+        <!--List Items-->
+        <div class="list" v-if="showItems">
         <h4>{{ title }}</h4>
         <br>
          <ul>
             <li v-for="item in items" :key="item.id">{{ item.item }}</li>
         </ul>
-    </div> 
+        </div> 
     </form>
-    
 </template>
 
 <script>
@@ -40,6 +46,8 @@ import getUser from '@/composables/getUser'
 import { useRouter } from 'vue-router'
 import useUsers from '@/composables/useUsers'
 import { projectFirestore } from '@/firebase/config'
+import defaultImage from '@/assets/uni.png';
+
 
 
 export default {
@@ -47,8 +55,8 @@ export default {
         const { url, filePath, uploadImage } = useStorage();
         const { error, addDoc } = useCollection('shoppingLists');
         const {currentUser} = getUser()
-        const { availableUsers, selectedUsers, addSelectedUser } = useUsers()  // Use the useUsers composable
-  
+        const { availableUsers, selectedUsers, addSelectedUser } = useUsers() 
+        
         const router = useRouter()
 
         const title = ref('')
@@ -59,7 +67,10 @@ export default {
         const showItems = ref(false)
         const isPending = ref(false)
         const userEmail = ref('')
-        const sharedWith = ref([])
+        const sharedWithID = ref('')
+        const sharedUser = ref('')
+        const defaultImageUrl = defaultImage;
+
         
         const addSharedUser = async () => {
             if (!userEmail.value) return;
@@ -76,7 +87,8 @@ export default {
                 const user = userSnapshot.docs[0].data();
                 console.log('user added:', user);
                 addSelectedUser(user.userId, user.displayName)
-                sharedWith.value.push({id: user.userId, displayName: user.displayName}); // Adiciona o usuário selecionado
+                sharedWithID.value = user.userId; 
+                sharedUser.value = user.displayName;
  
                 userEmail.value = '';
 
@@ -86,27 +98,31 @@ export default {
         };
 
         const handleSubmit = async () => {
-            //Se a ref do file estiver vazia ele não entra no if e o processo não finaliza
-            if(file.value){
-                isPending.value = true
-
+            // Check if a file is selected
+            if (file.value) {
                 await uploadImage(file.value);
+            }
 
-                const resp = await addDoc({
-                    userId: currentUser.value.uid,
-                    userName: currentUser.value.displayName,
-                    title: title.value,
-                    items: items.value,
-                    imageURL: url.value,
-                    filePath: filePath.value,
-                    createdAt: timestamp(),
-                    sharedWith: sharedWith.value
-                });
-                isPending.value = false
+            // Continue with the rest of the form submission
+            isPending.value = true;
 
-                if(!error.value) {
-                    router.push({ name: 'ListDetails', params: { id: resp.id } })
-                }
+            const formData = {
+                userId: currentUser.value.uid,
+                userName: currentUser.value.displayName,
+                title: title.value,
+                items: items.value,
+                imageURL: file.value ? url.value : defaultImageUrl, // Use imageURL only if a file is uploaded
+                filePath: file.value ? filePath.value : '', // Use filePath only if a file is uploaded
+                createdAt: timestamp(),
+                sharedWithID: sharedWithID.value,
+                sharedUser: sharedUser.value
+            };
+
+            const resp = await addDoc(formData);
+            isPending.value = false;
+
+            if (!error.value) {
+                router.push({ name: 'ListDetails', params: { id: resp.id } });
             }
         };
 
@@ -145,8 +161,6 @@ export default {
             newItem.value = '';
     }
 };
-
-
         return { 
             title, 
             items, 
@@ -159,7 +173,8 @@ export default {
             handleFileUpload,
             addSharedUser, 
             userEmail,
-            sharedWith,
+            sharedWithID,
+            sharedUser,
             selectedUsers,
             availableUsers
              }

@@ -1,9 +1,12 @@
 <template>
   <div class="home">
-    <p>Home Page</p>
+    <p>All Lists</p>
     <div v-if="error" class="error">{{ error }}</div>
-    <div v-if="documents">
-      <ListView :shoppingLists="documents"/> 
+    <div v-if="sharedLists">
+      <ListView :shoppingLists="sharedLists"/> 
+    </div>
+    <div v-if="myLists">
+      <ListView :shoppingLists="myLists"/> 
     </div>
   </div>
 </template>
@@ -12,6 +15,9 @@
 import getCollection from '@/composables/getCollection';
 import ListView from '@/components/ListView.vue';
 import getUser from '@/composables/getUser';
+import { computed } from 'vue';
+
+
 
 export default {
   name: 'HomeView',
@@ -19,11 +25,14 @@ export default {
 
   setup () {
     const {currentUser} = getUser()
-    const { error, documents} = getCollection('shoppingLists', ['userId', '==', currentUser.value.uid])
-    console.log('documents', documents)
+    const { error, documents: sharedLists} = getCollection('shoppingLists', ['sharedWithID', '==', currentUser.value.uid])
+    const {documents: myLists} = getCollection('shoppingLists', ['userId', '==', currentUser.value.uid])
+
+    const combinedLists = computed(() => [...sharedLists.value, ...myLists.value]);
 
 
-    return { error, documents, currentUser }
+
+    return { error, sharedLists, myLists }
   }
 }
 </script>

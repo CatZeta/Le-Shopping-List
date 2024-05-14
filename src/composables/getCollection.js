@@ -34,7 +34,7 @@ const getCollection = (collection, query) => {
         error.value = 'Could not fetch data'
     })
 
-//Não entendo isto muito bem, ele faz reset quando é invocado de novo é isso ?
+
     watchEffect((onInvalidate) => {
         //Unsub from prev collection when watcher is stopped (component unmounted)
         onInvalidate(() => unsub())

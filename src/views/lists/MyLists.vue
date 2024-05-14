@@ -17,7 +17,7 @@ export default {
         setup () {
             const {currentUser} = getUser()
             const {documents: shoppingLists} = getCollection('shoppingLists', ['userId', '==', currentUser.value.uid])
-            console.log(shoppingLists.value)
+
         return {shoppingLists}
     }
 }
