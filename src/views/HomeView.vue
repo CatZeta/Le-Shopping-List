@@ -11,28 +11,23 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import getCollection from '@/composables/getCollection';
 import ListView from '@/components/ListView.vue';
 import getUser from '@/composables/getUser';
 import { computed } from 'vue';
 
+// Get current user
+const { currentUser } = getUser();
 
+// Get shared lists and my lists
+const { error, documents: sharedLists } = getCollection('shoppingLists', ['sharedWithID', '==', currentUser.value.uid]);
+const { documents: myLists } = getCollection('shoppingLists', ['userId', '==', currentUser.value.uid]);
 
-export default {
-  name: 'HomeView',
-  components: { ListView },
-
-  setup () {
-    const {currentUser} = getUser()
-    const { error, documents: sharedLists} = getCollection('shoppingLists', ['sharedWithID', '==', currentUser.value.uid])
-    const {documents: myLists} = getCollection('shoppingLists', ['userId', '==', currentUser.value.uid])
-
-    const combinedLists = computed(() => [...sharedLists.value, ...myLists.value]);
-
-
-
-    return { error, sharedLists, myLists }
-  }
-}
+// Combine lists
+const combinedLists = computed(() => [...sharedLists.value, ...myLists.value]);
 </script>
+
+<style scoped>
+
+</style>

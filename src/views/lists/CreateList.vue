@@ -37,7 +37,7 @@
     </form>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue'
 import { timestamp } from '@/firebase/config'
 import useStorage  from '@/composables/useStorage.js'
@@ -48,10 +48,6 @@ import useUsers from '@/composables/useUsers'
 import { projectFirestore } from '@/firebase/config'
 import defaultImage from '@/assets/uni.png';
 
-
-
-export default {
-    setup () {
         const { url, filePath, uploadImage } = useStorage();
         const { error, addDoc } = useCollection('shoppingLists');
         const {currentUser} = getUser()
@@ -161,25 +157,7 @@ export default {
             newItem.value = '';
     }
 };
-        return { 
-            title, 
-            items, 
-            newItem, 
-            fileError, 
-            showItems,
-            isPending,
-            handleSubmit, 
-            addItem, 
-            handleFileUpload,
-            addSharedUser, 
-            userEmail,
-            sharedWithID,
-            sharedUser,
-            selectedUsers,
-            availableUsers
-             }
-    }
-}
+
 </script>
 
 <style scoped>

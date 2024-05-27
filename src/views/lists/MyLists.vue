@@ -7,20 +7,14 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import getUser from '@/composables/getUser'
 import getCollection from '@/composables/getCollection'
 import ListView from '@/components/ListView.vue'
 
-export default {
-    components: { ListView },
-        setup () {
-            const {currentUser} = getUser()
-            const {documents: shoppingLists} = getCollection('shoppingLists', ['userId', '==', currentUser.value.uid])
+    const {currentUser} = getUser()
+    const {documents: shoppingLists} = getCollection('shoppingLists', ['userId', '==', currentUser.value.uid])
 
-        return {shoppingLists}
-    }
-}
 </script>
 
 <style lang="scss" scoped>

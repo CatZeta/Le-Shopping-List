@@ -17,16 +17,12 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { defineProps } from 'vue'
 
-export default {
-    props: ['shoppingLists'],
-    setup () {
-        
+const props = defineProps(['shoppingLists'])
 
-        return {}
-    }
-}
+
 </script>
 
 <style scoped>

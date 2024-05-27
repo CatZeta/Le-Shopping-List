@@ -9,13 +9,11 @@
     </form>
 </template>
 
-<script>
+<script setup>
 import useLogin from '@/composables/useLogin.js'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-export default {
-    setup () {
         const router = useRouter()
         const {error, login, isPending} = useLogin()
         const email = ref('')
@@ -32,9 +30,6 @@ export default {
             password.value =''
         }
 
-        return {email, password, error, handleSubmit, isPending}
-    }
-}
 </script>
 
 <style lang="scss" scoped>
