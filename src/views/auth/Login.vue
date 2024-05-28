@@ -10,28 +10,26 @@
 </template>
 
 <script setup>
-import useLogin from '@/composables/useLogin.js'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+    import useLogin from '@/composables/useLogin.js'
+    import { ref } from 'vue'
+    import { useRouter } from 'vue-router'
 
-        const router = useRouter()
-        const {error, login, isPending} = useLogin()
-        const email = ref('')
-        const password = ref('')
+    const router = useRouter()
+    const { error, login, isPending } = useLogin()
+    const email = ref('')
+    const password = ref('')
 
-        const handleSubmit = async () => {
-            const resp = await login(email.value, password.value)
-            if(!error.value) {
-                router.push({ name: 'Home' })
-                console.log('user logged in')
-            }
-            console.log(resp)
-            email.value = ''
-            password.value =''
+    const handleSubmit = async () => {
+        const resp = await login(email.value, password.value)
+        if (!error.value) {
+            router.push({ name: 'Home' })
+            console.log('user logged in')
         }
+        console.log(resp)
+        email.value = ''
+        password.value = ''
+    }
 
 </script>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

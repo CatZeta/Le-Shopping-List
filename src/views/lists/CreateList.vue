@@ -1,151 +1,111 @@
 <template>
     <form>
-        <h4>Create Shopping List</h4>
+        <h4>Create a List</h4>
         <input type="text" placeholder="List title" v-model="title" required>
-        <input type="text" placeholder="Enter email to share list" v-model="userEmail">
-        <button @click.prevent="addSharedUser">Add User</button>
 
-        <input type="text" placeholder="Enter to add item" v-model="newItem" @keyup.enter="addItem">
 
-        <!-- Displays seleted users -->
-        <div v-if="selectedUsers">
-            <h4>Selected Users</h4>
-                <p v-for="user in selectedUsers" :key="userId">{{ user }}</p>
-        </div>
-        <br>
+        <input type="text" placeholder="Enter to add item's" v-model="newItem" @keydown.enter.prevent="addItem">
 
-        
-        <!--TODO: Implemtent library for optical character recognition so the user can uploads their own lists and convert them-->
-        <p>upload a photo</p>
+        <!--TODO: Implement library for optical character recognition so the user can uploads their own lists and convert them-->
+        <p>Give your list a cool photo!</p>
         <input type="file" @change="handleFileUpload">
         <div class="error">{{ fileError }}</div>
 
 
-        <!--loading indicator-->
         <button v-if="!isPending" @click.prevent="handleSubmit">Create</button>
+        <!--loading indicator-->
         <button v-else disabled>Saving...</button>
         <br>
+    </form>
 
-        <!--List Items-->
-        <div class="list" v-if="showItems">
+    <!--List Items-->
+    <!--Add Delete -->
+    <div class="list" v-if="showItems">
         <h4>{{ title }}</h4>
         <br>
-         <ul>
+        <ul>
             <li v-for="item in items" :key="item.id">{{ item.item }}</li>
         </ul>
-        </div> 
-    </form>
+    </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { timestamp } from '@/firebase/config'
-import useStorage  from '@/composables/useStorage.js'
-import useCollection from '@/composables/useCollection'
-import getUser from '@/composables/getUser'
-import { useRouter } from 'vue-router'
-import useUsers from '@/composables/useUsers'
-import { projectFirestore } from '@/firebase/config'
-import defaultImage from '@/assets/uni.png';
+    import { ref } from 'vue'
+    import { timestamp } from '@/firebase/config'
+    import useStorage from '@/composables/useStorage.js'
+    import useCollection from '@/composables/useCollection'
+    import getUser from '@/composables/getUser'
+    import { useRouter } from 'vue-router'
+    import defaultImage from '@/assets/uni.png';
 
-        const { url, filePath, uploadImage } = useStorage();
-        const { error, addDoc } = useCollection('shoppingLists');
-        const {currentUser} = getUser()
-        const { availableUsers, selectedUsers, addSelectedUser } = useUsers() 
-        
-        const router = useRouter()
+    const { url, filePath, uploadImage } = useStorage();
+    const { error, addDoc } = useCollection('shoppingLists');
+    const { currentUser } = getUser()
+   
 
-        const title = ref('')
-        const newItem = ref('')
-        const items = ref([])
-        const file = ref(null)
-        const fileError = ref(null)
-        const showItems = ref(false)
-        const isPending = ref(false)
-        const userEmail = ref('')
-        const sharedWithID = ref('')
-        const sharedUser = ref('')
-        const defaultImageUrl = defaultImage;
+    const router = useRouter()
+    const title = ref('')
+    const newItem = ref('')
+    const items = ref([])
+    const file = ref(null)
+    const fileError = ref(null)
+    const showItems = ref(false)
+    const isPending = ref(false)
+    const defaultImageUrl = defaultImage;
 
-        
-        const addSharedUser = async () => {
-            if (!userEmail.value) return;
 
-            try {
-                
-                const userSnapshot = await projectFirestore.collection('users').where('email', '==', userEmail.value).get();
+    const handleSubmit = async () => {
 
-                if (userSnapshot.empty) {
-                    console.log('User not found');
-                    return;
-                }
+        // Check if a file is selected
+        if (file.value) {
+            await uploadImage(file.value);
+        }
 
-                const user = userSnapshot.docs[0].data();
-                console.log('user added:', user);
-                addSelectedUser(user.userId, user.displayName)
-                sharedWithID.value = user.userId; 
-                sharedUser.value = user.displayName;
- 
-                userEmail.value = '';
+        // Continue with the rest of the form submission
+        isPending.value = true;
 
-            } catch (err) {
-                console.error('Error adding user to list:', err.message);
-            }
+        const formData = {
+            userId: currentUser.value.uid,
+            userName: currentUser.value.displayName,
+            title: title.value,
+            items: items.value,
+            imageURL: file.value ? url.value : defaultImageUrl, // Use imageURL only if a file is uploaded
+            filePath: file.value ? filePath.value : '', // Use filePath only if a file is uploaded
+            createdAt: timestamp()
         };
 
-        const handleSubmit = async () => {
-            // Check if a file is selected
-            if (file.value) {
-                await uploadImage(file.value);
-            }
+        const resp = await addDoc(formData);
+        isPending.value = false;
 
-            // Continue with the rest of the form submission
-            isPending.value = true;
+        if (!error.value) {
+            router.push({ name: 'ListDetails', params: { id: resp.id } });
+        }
+    };
 
-            const formData = {
-                userId: currentUser.value.uid,
-                userName: currentUser.value.displayName,
-                title: title.value,
-                items: items.value,
-                imageURL: file.value ? url.value : defaultImageUrl, // Use imageURL only if a file is uploaded
-                filePath: file.value ? filePath.value : '', // Use filePath only if a file is uploaded
-                createdAt: timestamp(),
-                sharedWithID: sharedWithID.value,
-                sharedUser: sharedUser.value
-            };
+    /**
+     * Handle file upload event
+     *
+     * @param {Event} event - The file upload event.
+     */
+    //Alowed file types
+    const types = ['image/png', 'image/jpeg']
+    const handleFileUpload = (event) => {
 
-            const resp = await addDoc(formData);
-            isPending.value = false;
+        // Get the file object from the event
+        let uploadedFile = event.target.files[0];
 
-            if (!error.value) {
-                router.push({ name: 'ListDetails', params: { id: resp.id } });
-            }
-        };
+        //Check if the uploaded file is of the allowed types and if it exists, if the condition is met, set the file in the reactive variable.
+        if (uploadedFile && types.includes(uploadedFile.type)) {
+            file.value = uploadedFile;
+            fileError.value = null;
+        } else {
+            //Se o file não existir passa a null a sua ref
+            file.value = null;
+            fileError.value = 'Please select an image file (png or jpeg)';
+        }
+    };
 
-        /**
-         * Handle file upload event
-         *
-         * @param {Event} event - The file upload event.
-         */
-        //Alowed file types
-        const types = ['image/png', 'image/jpeg']
-        const handleFileUpload = (event) => {
-
-            // Get the file object from the event
-            let uploadedFile = event.target.files[0];
-
-            //Check if the uploaded file is of the allowed types and if it exists, if the condition is met, set the file in the reactive variable.
-            if(uploadedFile && types.includes(uploadedFile.type)) {
-                file.value = uploadedFile;
-                fileError.value = null;
-            } else {
-                //Se o file não existir passa a null a sua ref
-                file.value = null;
-                fileError.value = 'Please select an image file (png or jpeg)';
-            }
-        };
-
-        const addItem = () => {
+    const addItem = () => {
         if (newItem.value.trim() !== '') {
             const item = {
                 item: newItem.value,
@@ -155,12 +115,9 @@ import defaultImage from '@/assets/uni.png';
             items.value.push(item);
             showItems.value = true;
             newItem.value = '';
-    }
-};
+        }
+    };
 
 </script>
 
-<style scoped>
-  
-    
-</style>
+<style scoped></style>

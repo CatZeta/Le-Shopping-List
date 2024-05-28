@@ -7,10 +7,17 @@
       </div>
       <h2>{{ sl.title }}</h2>
       <p class="username">Created by {{ sl.userName }}</p>
-      <p v-if="sl.sharedUser" class="username">Shared with {{ sl.sharedUser}}</p>
+      <!--Dá display de todos os users partilhados-->
+      <div v-if="sl && sl.sharedWith && sl.sharedWith.length" class="username">
+        Shared with
+        <span v-for="(user, index) in sl.sharedWith" :key="user.userId">
+          {{ user.displayName }}
+          <span v-if="index < sl.sharedWith.length - 1">, </span>
+        </span>
+      </div>
+      <Share v-if="ownership" :sl="sl" />
       <button v-if="ownership" @click="handleDeleteList">Delete</button>
     </div>
-
 
     <!--Items list-->
     <div class="item-list">
@@ -33,43 +40,44 @@
   import useDocument from '@/composables/useDocument';
   import getDocument from '@/composables/getDocument';
   import getUser from '@/composables/getUser';
-  import { computed, defineProps } from 'vue';
+  import { computed, defineProps, ref } from 'vue';
+  import Share from '@/components/Share.vue';
 
 
   const props = defineProps(['id'])
+
 
   const { currentUser } = getUser()
   const router = useRouter()
   const { deleteImage } = useStorage()
   const { deleteDoc, updateDoc } = useDocument('shoppingLists', props.id)
 
-
   //sl for shopping list (alias)
   const { document: sl, error } = getDocument('shoppingLists', props.id)
 
-  //Ownership logic, defines who have acess to update docs
+  //Ownership logic, defines who have access to delete docs
   const ownership = computed(() => {
     return (
       (sl.value && currentUser.value && currentUser.value.uid === sl.value.userId)
     );
   })
 
+  //defines who have access to update docs
   const updateAccess = computed(() => {
     return (
       (sl.value && currentUser.value && currentUser.value.uid === sl.value.userId) ||
-      (sl.value && sl.value.sharedWithID && sl.value.sharedWithID.length > 0)
+      (sl.value && sl.value.sharedWith && sl.value.sharedWith.some(user => user.userId === currentUser.value.uid))
     );
   })
 
   const handleDeleteList = async () => {
-    if (ownership) {
+    if (ownership.value) {
       await deleteImage(sl.value.filePath)
       await deleteDoc()
       router.push('/')
     } else {
       error.value = "Only the owner can delete the list"
     }
-
   }
 
   const handleDeleteItem = async (id) => {
@@ -77,6 +85,7 @@
     await updateDoc({ items })
     console.log(id)
   }
+
 </script>
 
 <style scoped>
@@ -128,6 +137,6 @@
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px dashed var(--secondary);
-    margin-bottom: 20px;
+    margin-bottom: 15px;
   }
 </style>

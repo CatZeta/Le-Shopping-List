@@ -32,6 +32,8 @@
 
         item.value = ''
 
+        showForm.value = false
+
     }
 
 </script>

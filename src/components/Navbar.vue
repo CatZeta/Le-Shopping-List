@@ -3,7 +3,7 @@
     <nav>
       <img src="@/assets/uni.png" alt="the round universe">
       <h1>
-        <RouterLink :to="{ name: 'Home' }">Le Shopping Master</RouterLink>
+        <RouterLink :to="{ name: 'Home' }">The List Master</RouterLink>
       </h1>
 
       <div class="links">
@@ -14,7 +14,7 @@
           <button @click="handleLogout">Logout</button>
         </div>
 
-        <div v-if="!currentUser">
+        <div v-else>
           <RouterLink class="btn" :to="{ name: 'Signup' }">Signup</RouterLink>
           <RouterLink class="btn" :to="{ name: 'Login' }">Log in</RouterLink>
         </div>
